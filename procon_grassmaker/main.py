@@ -1,13 +1,13 @@
 import argparse
 import pathlib
 import sys
-from logging import DEBUG, INFO, addLevelName, StreamHandler, getLogger
-from typing import Dict, List
+from logging import getLogger
 from pprint import pp
+from typing import Dict, List
 
-from . import atcoder, util, log
+from . import atcoder, codeforces, log, util, archive, aoj
 
-logger = getLogger()
+logger = getLogger(__name__)
 
 
 def main() -> None:
@@ -17,15 +17,7 @@ def main() -> None:
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
-    # load logger
-    handler = StreamHandler()
-    handler.setFormatter(log.formatter)
-    logger.addHandler(handler)
-    if args.verbose:
-        logger.setLevel(DEBUG)
-        logger.debug("--verbose is specified")
-    else:
-        logger.setLevel(INFO)
+    log.setup_logger(args.verbose)
 
     # load config
     if args.init:
@@ -43,13 +35,21 @@ def main() -> None:
     logger.info(f"username: {username}")
     archive_dir = pathlib.Path(config["config"]["archive_dir"])
     logger.info(f"archive directry: {archive_dir}")
+    repo = archive.Archive(archive_dir)
 
     ext_info: Dict[str, str] = util.get_extention_info()
 
     # archive
     if "atcoder" in username:
-        atcoder.archive_atcoder(username["atcoder"], archive_dir, ext_info)
+        atcoder.archive_atcoder(username["atcoder"], archive_dir, ext_info, repo)
+    if "codeforces" in username:
+        codeforces.archive_codeforces(
+            username["codeforces"], archive_dir, ext_info, repo
+        )
+    if "aizuonlinejudge" in username:
+        aoj.archive_aoj(username["aizuonlinejudge"], archive_dir, ext_info, repo)
 
+    repo.push()
     util.write_extention_info(ext_info)
 
 

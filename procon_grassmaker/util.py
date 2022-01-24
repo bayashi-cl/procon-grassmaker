@@ -6,7 +6,7 @@ from logging import getLogger
 
 import toml
 
-logger = getLogger()
+logger = getLogger(__name__)
 
 
 def get_ext(lang: str, info: Dict[str, str]) -> str:
@@ -64,3 +64,7 @@ def get_extention_info() -> Any:
 
 def write_extention_info(info: Dict[str, str]) -> None:
     extention_file.write_text(json.dumps(info))
+
+
+class NetworkError(Exception):
+    pass

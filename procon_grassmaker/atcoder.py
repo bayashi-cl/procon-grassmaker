@@ -14,11 +14,7 @@ from bs4 import BeautifulSoup
 from . import archive, submission, util
 from .log import NETWORK
 
-logger = getLogger()
-
-
-class NetworkError(Exception):
-    pass
+logger = getLogger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -44,7 +40,7 @@ def atcoder_api_request(username: str, sec: int) -> str:
     logger.log(NETWORK, f"status code: {res.status_code}")
     if res.status_code != 200:
         logger.error(f"status code {res.status_code}")
-        raise NetworkError
+        raise util.NetworkError
     time.sleep(2)
     return res.text
 
@@ -65,18 +61,19 @@ def get_submissions_data(username: str) -> List[AtCoderSubmission]:
     return data
 
 
-def get_submission_code(sub: AtCoderSubmission):
+def get_submission_code(sub: AtCoderSubmission) -> str:
     atcoder_url = f"https://atcoder.jp/contests/{sub.contest_id}/submissions/{sub.id}"
     logger.log(NETWORK, f"GET: {atcoder_url}")
     res = requests.get(atcoder_url)
     logger.log(NETWORK, f"status code: {res.status_code}")
     if res.status_code != 200:
-        raise NetworkError
+        logger.error(f"status code {res.status_code}")
+        raise util.NetworkError
     soup = BeautifulSoup(res.text, "html.parser")
     code = soup.find(id="submission-code")
     if code is None:
-        logger.error(f"status code {res.status_code}")
-        raise NetworkError
+        logger.error("cannot find code")
+        raise util.NetworkError
     logger.debug("sucess to get code.")
     time.sleep(2)
     return code.string
@@ -108,14 +105,22 @@ def is_archived(archive_root: pathlib.Path, sub: AtCoderSubmission) -> bool:
 
 
 def archive_atcoder(
-    username: str, archive_dir: pathlib.Path, ext_info: Dict[str, str]
+    username: str,
+    archive_dir: pathlib.Path,
+    ext_info: Dict[str, str],
+    repo: archive.Archive,
 ) -> None:
-    arc = archive.Archive(archive_dir)
+    logger.info("start codeforces")
     submissions_data = get_submissions_data(username)
     archive_submissions: List[AtCoderSubmission] = []
     for sub in submissions_data:
+        util.get_ext(sub.language, ext_info)
         if is_ac(sub) and not is_archived(archive_dir, sub):
             archive_submissions.append(sub)
+
+    if len(archive_submissions) == 0:
+        logger.info("No submission to archive")
+        return
 
     print(f"Archive {len(archive_submissions)} submissions from atcoder")
     ans = input("continue? [y/n] ")
@@ -125,7 +130,7 @@ def archive_atcoder(
     for sub in archive_submissions:
         name = str(sub.id) + util.get_ext(sub.language, ext_info)
         time = datetime.fromtimestamp(sub.epoch_second, tz=dateutil.tz.tzlocal())
-        arc.archive(
+        repo.archive(
             get_archive_path(archive_dir, sub),
             get_submission_code(sub),
             name,

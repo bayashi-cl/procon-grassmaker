@@ -10,7 +10,7 @@ from git import InvalidGitRepositoryError, Repo
 
 from . import submission
 
-logger = getLogger()
+logger = getLogger(__name__)
 
 
 class Archive:
@@ -25,6 +25,12 @@ class Archive:
             print("cannot find .git directory")
             print(f"try 'git init' at {str(path)}")
             sys.exit(1)
+        try:
+            origin = self.repo.remotes.origin
+            logger.info("pull from remote repo")
+            origin.pull()
+        except AttributeError:
+            pass
 
     def archive(
         self,
@@ -61,3 +67,11 @@ class Archive:
         self.repo.index.add([str(code_file), str(submissions_file)])
         logger.info(f"git commit [{msg}, author_date={time}]")
         self.repo.index.commit(msg, author_date=time)  # type: ignore
+
+    def push(self):
+        try:
+            origin = self.repo.remotes.origin
+            logger.info("push to remote repo")
+            origin.push()
+        except AttributeError:
+            pass
