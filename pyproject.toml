@@ -5,7 +5,7 @@ description = ""
 authors = ["Masaki Kobayashi <bayashi.cl@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8,<3.9"
 requests = "^2.26.0"
 bs4 = "^0.0.1"
 GitPython = "^3.1.24"
