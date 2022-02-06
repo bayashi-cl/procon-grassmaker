@@ -5,7 +5,7 @@ from logging import getLogger
 from pprint import pp
 from typing import Dict, List
 
-from . import atcoder, codeforces, log, util, archive, aoj
+from . import aoj, archive, atcoder, codeforces, log, util
 
 logger = getLogger(__name__)
 
@@ -15,6 +15,7 @@ def main() -> None:
     parser.add_argument("--init", action="store_true")
     parser.add_argument("--config", action="store_true")
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--yes", "-y", action="store_true")
     args = parser.parse_args()
 
     log.setup_logger(args.verbose)
@@ -41,13 +42,17 @@ def main() -> None:
 
     # archive
     if "atcoder" in username:
-        atcoder.archive_atcoder(username["atcoder"], archive_dir, ext_info, repo)
+        atcoder.archive_atcoder(
+            username["atcoder"], archive_dir, ext_info, repo, args.yes
+        )
     if "codeforces" in username:
         codeforces.archive_codeforces(
-            username["codeforces"], archive_dir, ext_info, repo
+            username["codeforces"], archive_dir, ext_info, repo, args.yes
         )
     if "aizuonlinejudge" in username:
-        aoj.archive_aoj(username["aizuonlinejudge"], archive_dir, ext_info, repo)
+        aoj.archive_aoj(
+            username["aizuonlinejudge"], archive_dir, ext_info, repo, args.yes
+        )
 
     repo.push()
     util.write_extention_info(ext_info)

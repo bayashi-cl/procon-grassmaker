@@ -114,6 +114,7 @@ def archive_aoj(
     archive_dir: pathlib.Path,
     ext_info: Dict[str, str],
     repo: archive.Archive,
+    yes: bool,
 ) -> None:
     logger.info("start AOJ")
     submissions_data = get_submissions_data(username)
@@ -128,9 +129,10 @@ def archive_aoj(
         return
 
     print(f"Archive {len(archive_submissions)} submissions from AOJ")
-    ans = input("continue? [y/n] ")
-    if ans != "y":
-        sys.exit()
+    if not yes:
+        ans = input("continue? [y/n] ")
+        if ans != "y":
+            sys.exit()
 
     for sub in archive_submissions:
         name = str(sub.judgeId) + util.get_ext(sub.language, ext_info)

@@ -1,0 +1,21 @@
+{
+    "C": ".c",
+    "C++": ".cpp",
+    "JAVA": ".java",
+    "C++11": ".cpp",
+    "C++14": ".cpp",
+    "C++17": ".cpp",
+    "C#": ".cs",
+    "D": ".d",
+    "Go": ".go",
+    "Ruby": ".rb",
+    "Rust": ".rs",
+    "Python": ".py",
+    "Python3": ".py",
+    "JavaScript": ".js",
+    "Scala": ".scala",
+    "Haskell": ".hs",
+    "OCaml": ".ml",
+    "PHP": ".php",
+    "Kotlin": ".kt"
+}

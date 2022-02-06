@@ -145,6 +145,7 @@ def archive_codeforces(
     archive_dir: pathlib.Path,
     ext_info: Dict[str, str],
     repo: archive.Archive,
+    yes: bool,
 ) -> None:
     logger.info("start codeforces")
     submissions_data = get_submissions_data(username)
@@ -159,9 +160,10 @@ def archive_codeforces(
         return
 
     print(f"Archive {len(archive_submissions)} submissions from codeforces")
-    ans = input("continue? [y/n] ")
-    if ans != "y":
-        sys.exit()
+    if not yes:
+        ans = input("continue? [y/n] ")
+        if ans != "y":
+            sys.exit()
 
     for sub in archive_submissions:
         name = str(sub.id) + util.get_ext(sub.programmingLanguage, ext_info)
