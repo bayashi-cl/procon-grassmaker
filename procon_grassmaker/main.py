@@ -5,7 +5,7 @@ from logging import getLogger
 from pprint import pp
 from typing import Dict, List
 
-from . import aoj, archive, atcoder, codeforces, log, util
+from . import archive, atcoder, codeforces, log, util, aoj
 
 logger = getLogger(__name__)
 
@@ -15,6 +15,7 @@ def main() -> None:
     parser.add_argument("--init", action="store_true")
     parser.add_argument("--config", action="store_true")
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--dir", type=pathlib.Path)
     parser.add_argument("--yes", "-y", action="store_true")
     args = parser.parse_args()
 
@@ -31,31 +32,35 @@ def main() -> None:
         pp(util.get_config())
         sys.exit(0)
 
-    config = util.get_config()
-    username: Dict[str, str] = config["username"]
-    logger.info(f"username: {username}")
-    archive_dir = pathlib.Path(config["config"]["archive_dir"])
-    logger.info(f"archive directry: {archive_dir}")
-    repo = archive.Archive(archive_dir)
+    archive_dir: pathlib.Path
+    if args.dir is None:
+        config = util.get_config()
+        archive_dir = pathlib.Path(config["config"]["archive_dir"])
+    else:
+        archive_dir = args.dir
 
-    ext_info: Dict[str, str] = util.get_extention_info()
+    if not archive_dir.exists():
+        logger.error(f"{archive_dir} not found")
+        sys.exit(1)
+    logger.info("archive directory found")
+
+    repo = archive.Archive(archive_dir)
+    username = repo.get_usernames()
 
     # archive
     if "atcoder" in username:
-        atcoder.archive_atcoder(
-            username["atcoder"], archive_dir, ext_info, repo, args.yes
-        )
+        ac = atcoder.AtCoder(username["atcoder"], repo)
+        ac.archive(args.yes)
+
     if "codeforces" in username:
-        codeforces.archive_codeforces(
-            username["codeforces"], archive_dir, ext_info, repo, args.yes
-        )
+        cf = codeforces.CodeForeces(username["codeforces"], repo)
+        cf.archive(args.yes)
+
     if "aizuonlinejudge" in username:
-        aoj.archive_aoj(
-            username["aizuonlinejudge"], archive_dir, ext_info, repo, args.yes
-        )
+        aoj_ = aoj.AizuOnlineJudge(username["aizuonlinejudge"], repo)
+        aoj_.archive(args.yes)
 
     repo.push()
-    util.write_extention_info(ext_info)
 
 
 if __name__ == "__main__":

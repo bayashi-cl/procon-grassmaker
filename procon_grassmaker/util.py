@@ -20,10 +20,7 @@ def get_ext(lang: str, info: Dict[str, str]) -> str:
     return info[lang]
 
 
-config_base = """[username]
-atcoder = ""
-
-[config]
+config_base = """[config]
 archive_dir = ''
 
 """
@@ -52,18 +49,6 @@ def get_config() -> Any:
 
     logger.info(f"Config file is load from {config_file}")
     return toml.loads(config_file.read_text())
-
-
-def get_extention_info() -> Any:
-    if not extention_file.exists():
-        logger.info(f"Genetate extention file at {extention_file}")
-        extention_file.write_text("{}")
-    logger.info(f"Load extention file from {extention_file}")
-    return json.loads(extention_file.read_text())
-
-
-def write_extention_info(info: Dict[str, str]) -> None:
-    extention_file.write_text(json.dumps(info))
 
 
 class NetworkError(Exception):

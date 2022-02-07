@@ -3,20 +3,25 @@ import json
 import pathlib
 import dataclasses
 import sys
-from typing import List, Any
+from typing import List, Any, Optional, Dict
 from logging import getLogger
 
 from git import InvalidGitRepositoryError, Repo
+import dateutil.tz
+import toml
 
-from . import submission
+# from . import submission
+from procon_grassmaker.submission import SubmissionABC
 
 logger = getLogger(__name__)
 
 
 class Archive:
     repo: Repo
+    root: pathlib.Path
 
     def __init__(self, path: pathlib.Path):
+        self.root = path
         try:
             self.repo = Repo(path)
             logger.info(".git dirctry found")
@@ -25,6 +30,7 @@ class Archive:
             print("cannot find .git directory")
             print(f"try 'git init' at {str(path)}")
             sys.exit(1)
+        logger.info("git repository found")
         try:
             origin = self.repo.remotes.origin
             logger.info("pull from remote repo")
@@ -32,13 +38,24 @@ class Archive:
         except AttributeError:
             pass
 
+        if not (path / "data").exists():
+            (path / "data").mkdir()
+
+    def get_usernames(self) -> Dict[str, str]:
+        config_file = self.root / ".grassmaker" / "config.toml"
+        if not config_file.exists():
+            raise ValueError
+
+        config = toml.loads(config_file.read_text())
+        return config["username"]
+
     def archive(
         self,
         dir: pathlib.Path,
         code: str,
         name: str,
         time: datetime.datetime,
-        info: submission.Submission,
+        info: SubmissionABC,
         msg: str,
     ):
         if not dir.exists():
@@ -62,10 +79,19 @@ class Archive:
         submissions.append(dataclasses.asdict(info))
         logger.info(f"Update {submissions_file}")
         submissions_file.write_text(json.dumps(submissions))
+        self.add_commit([code_file, submissions_file], msg, time)
 
-        logger.debug(f"git add [{code_file}, {submissions_file}]")
-        self.repo.index.add([str(code_file), str(submissions_file)])
-        logger.info(f"git commit [{msg}, author_date={time}]")
+    def add_commit(
+        self, files: List[pathlib.Path], msg: str, time: Optional[datetime.datetime]
+    ) -> None:
+        if time is None:
+            time = datetime.datetime.now(tz=dateutil.tz.tzlocal())
+        logger.info("git add :")
+        for f in files:
+            logger.info(f"\t{f}")
+        files_str = [str(f) for f in files]
+        self.repo.index.add(files_str)
+        logger.info(f"git commit {msg}, author_date={time}")
         self.repo.index.commit(msg, author_date=time)  # type: ignore
 
     def push(self):

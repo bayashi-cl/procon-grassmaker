@@ -1,4 +1,4 @@
-{
+languages_aoj = {
     "C": ".c",
     "C++": ".cpp",
     "JAVA": ".java",
@@ -17,5 +17,5 @@
     "Haskell": ".hs",
     "OCaml": ".ml",
     "PHP": ".php",
-    "Kotlin": ".kt"
+    "Kotlin": ".kt",
 }
