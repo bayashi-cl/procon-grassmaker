@@ -16,7 +16,7 @@ setup(
         "dacite",
         "pandas",
     ],
-    packages=find_packages("procon_grassmaker"),
+    packages=find_packages(exclude=("tests")),
     entry_points={
         "console_scripts": ["procon-grassmaker = procon_grassmaker.main:main"]
     },
