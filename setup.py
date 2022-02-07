@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="procon-grassmaker",
@@ -16,6 +16,7 @@ setup(
         "dacite",
         "pandas",
     ],
+    packages=find_packages("procon_grassmaker"),
     entry_points={
         "console_scripts": ["procon-grassmaker = procon_grassmaker.main:main"]
     },

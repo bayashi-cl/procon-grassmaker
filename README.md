@@ -11,6 +11,12 @@ procon-gardener](https://github.com/togatoga/procon-gardener)がありますが�
 * [codeforces](https://codeforces.com)
 * [Aizu Online Judge](https://onlinejudge.u-aizu.ac.jp)
 
+## install
+
+```
+pip install git+https://github.com/bayashi-cl/procon-grassmaker
+```
+
 ## usage
 
 1. アーカイブ先で`git --init`（&& githubリポジトリを作成）
