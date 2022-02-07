@@ -1,4 +1,4 @@
-{
+languages_atcoder = {
     "Ada2012 (GNAT 9.2.1)": ".adb",
     "Awk (GNU Awk 4.1.4)": ".awk",
     "Awk (mawk 1.3.3)": ".awk",
@@ -170,5 +170,5 @@
     "Visual Basic (Mono 4.0.1)": ".vb",
     "Zsh (5.4.2)": ".zsh",
     "bc (1.07.1)": ".bc",
-    "dc (1.4.1)": ".dc"
+    "dc (1.4.1)": ".dc",
 }

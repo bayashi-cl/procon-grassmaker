@@ -14,6 +14,7 @@ setup(
         "colorama",
         "colorlog",
         "dacite",
+        "pandas",
     ],
     entry_points={
         "console_scripts": ["procon-grassmaker = procon_grassmaker.main:main"]
