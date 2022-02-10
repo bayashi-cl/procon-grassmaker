@@ -88,7 +88,7 @@ class Archive:
             time = datetime.datetime.now(tz=dateutil.tz.tzlocal())
         logger.info("git add :")
         for f in files:
-            logger.info(f"\t{f}")
+            logger.info(f" - {f}")
         files_str = [str(f) for f in files]
         self.repo.index.add(files_str)
         logger.info(f"git commit {msg}, author_date={time}")

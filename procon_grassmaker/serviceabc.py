@@ -126,7 +126,7 @@ class ServiceBase(ServiceABC[Sub]):
             logger.info("No submission to archive")
             return
 
-        print(f"Archive {len(archive_submissions)} submissions from {self.servicename}")
+        logger.info(f"Archive {len(archive_submissions)} submissions from {self.servicename}")
         if not yes:
             ans = input("continue? [y/n] ")
             if ans != "y":
