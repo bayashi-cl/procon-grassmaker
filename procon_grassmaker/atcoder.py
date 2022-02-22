@@ -61,7 +61,7 @@ class AtCoder(ServiceBase[AtCoderSubmission]):
         csv_file = self.repo.root / "data" / "AtCoder.csv"
         sec = 0
         if csv_file.exists():
-            df = pd.read_csv(csv_file)
+            df = pd.read_csv(csv_file, index_col=0)
             sec = max(df["epoch_second"]) + 1
         else:
             df = pd.DataFrame()

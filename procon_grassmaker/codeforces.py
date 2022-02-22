@@ -119,7 +119,7 @@ class CodeForeces(ServiceBase[CodeforcesSubmission]):
         csv_file = self.repo.root / "data" / "CodeForces.csv"
         from_ = 1
         if csv_file.exists():
-            df = pd.read_csv(csv_file)
+            df = pd.read_csv(csv_file, index_col=0)
             from_ = len(df) + 1
         else:
             df = pd.DataFrame()

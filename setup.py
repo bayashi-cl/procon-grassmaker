@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="procon-grassmaker",
-    version="0.0.2",
+    version="1.0.0",
     author="Masaki Kobayash",
     author_email="bayashi.cl@gmail.com",
     install_requires=[

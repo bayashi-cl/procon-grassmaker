@@ -81,7 +81,7 @@ class AizuOnlineJudge(ServiceBase):
     def get_submissions_data(self) -> List[AOJSubmission]:
         csv_file = csv_file = self.repo.root / "data" / "AOJ.csv"
         if csv_file.exists():
-            df = pd.read_csv(csv_file)
+            df = pd.read_csv(csv_file, index_col=0)
         else:
             df = pd.DataFrame()
 
