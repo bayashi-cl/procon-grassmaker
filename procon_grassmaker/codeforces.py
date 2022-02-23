@@ -75,7 +75,8 @@ class CodeForeces(ServiceBase[CodeforcesSubmission]):
     def __init__(self, username: str, repo: archive.Archive) -> None:
         return super().__init__(username, repo)
 
-    def codeforces_api_reqest(self, from_: int) -> str:
+    def codeforces_api_reqest(self) -> str:
+        from_ = 1
         count = 1000000000
         codeforces_api = "https://codeforces.com/api/user.status"
         params = {"handle": self.username, "from": str(from_), "count": str(count)}
@@ -117,34 +118,27 @@ class CodeForeces(ServiceBase[CodeforcesSubmission]):
 
     def get_submissions_data(self) -> List[CodeforcesSubmission]:
         csv_file = self.repo.root / "data" / "CodeForces.csv"
-        from_ = 1
         if csv_file.exists():
             df = pd.read_csv(csv_file, index_col=0)
-            from_ = len(df) + 1
         else:
             df = pd.DataFrame()
 
-        new_data: List[CodeforcesSubmission] = []
-        res: Dict[str, Any] = json.loads(self.codeforces_api_reqest(from_))
+        data: List[CodeforcesSubmission] = []
+        res: Dict[str, Any] = json.loads(self.codeforces_api_reqest())
         if res["status"] != "OK":
             logger.error(f"codeforces api status: {res['status']}")
             logger.error(res.get("comment", ""))
             raise util.NetworkError
         for sub in reversed(res["result"]):
-            new_data.append(from_dict(CodeforcesSubmission, sub))
+            data.append(from_dict(CodeforcesSubmission, sub))
 
-        n_new_data = len(new_data)
-        logger.info(f"got {n_new_data} new submissions")
-        if n_new_data == 0:
-            return []
+        df_after = pd.DataFrame(data)
+        df_after.sort_values(by="creationTimeSeconds")
+        if len(df) != len(df_after):
+            df_after.to_csv(csv_file)
+            self.repo.add_commit([csv_file], "update CodeForces.csv", None)
 
-        new_df = pd.DataFrame(new_data)
-        new_df.sort_values(by="creationTimeSeconds")
-        df_after: pd.DataFrame = pd.concat([df, new_df])
-        df_after.to_csv(csv_file)
-        self.repo.add_commit([csv_file], "update CodeForces.csv", None)
-
-        return new_data
+        return data
 
     def is_ac(self, sub: CodeforcesSubmission) -> bool:
         return sub.verdict == "OK"
