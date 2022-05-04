@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="procon-grassmaker",
-    version="1.0.1",
+    version="1.1.0",
     author="Masaki Kobayash",
     author_email="bayashi.cl@gmail.com",
     install_requires=[
@@ -15,6 +15,7 @@ setup(
         "colorlog",
         "dacite",
         "pandas",
+        "dukpy",
     ],
     packages=find_packages(exclude=["tests*"]),
     entry_points={

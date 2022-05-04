@@ -3,19 +3,19 @@ import json
 import pathlib
 import time
 from logging import getLogger
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
-import requests
+import dukpy
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 from dacite import from_dict
 
 from procon_grassmaker import archive, util
 from procon_grassmaker.log import NETWORK
 from procon_grassmaker.serviceabc import ServiceBase
-from procon_grassmaker.submission import SubmissionABC
 from procon_grassmaker.src.langs_cf import languages_codeforces
-
+from procon_grassmaker.submission import SubmissionABC
 
 logger = getLogger(__name__)
 
@@ -97,6 +97,27 @@ class CodeForeces(ServiceBase[CodeforcesSubmission]):
                 self.repo.root / "codeforces" / str(sub.contestId) / sub.problem.index
             )
 
+    def redirect(self, soup: BeautifulSoup) -> BeautifulSoup:
+        if soup.find("body").text != "Redirecting... Please, wait.":
+            logger.error("Faild to ridirect.")
+            raise util.NetworkError
+        scripts = soup.find_all("script")
+        assert len(scripts) == 2
+        url_aes = "https://codeforces.com" + scripts[0]["src"]
+        aes_js = requests.get(url_aes).text
+
+        code_js: str = scripts[1].text
+        code_js = code_js.replace("document.cookie", "cookie")
+        code_js = code_js.replace("document.location.href", "href")
+
+        raw_cookie, href = dukpy.evaljs([aes_js + code_js, "[cookie, href]"])
+        cookies = dict(elem.split("=") for elem in raw_cookie.split("; "))
+        res = requests.get(href, cookies=cookies)
+        if res.status_code != 200:
+            logger.error(f"status code {res.status_code}")
+            raise util.NetworkError
+        return BeautifulSoup(res.text, "html.parser")
+
     def get_submission_code(self, sub: CodeforcesSubmission) -> str:
         codeforces_url = (
             f"https://codeforces.com/contest/{sub.contestId}/submission/{sub.id}"
@@ -110,9 +131,14 @@ class CodeForeces(ServiceBase[CodeforcesSubmission]):
         soup = BeautifulSoup(res.text, "html.parser")
         code = soup.find(id="program-source-text")
         if code is None:
-            logger.error("cannot find code")
-            raise util.NetworkError
-        logger.debug("sucess to get code.")
+            logger.info("Failed to find code. Try ridirect...")
+            soup = self.redirect(soup)
+            code = soup.find(id="program-source-text")
+            if code is None:
+                logger.error("Redirect success, but failed to find code again.")
+                raise util.NetworkError
+
+        logger.debug("success to get code.")
         time.sleep(2)
         return code.string
 
